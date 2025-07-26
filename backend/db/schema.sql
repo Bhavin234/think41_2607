@@ -80,3 +80,20 @@ CREATE TABLE users(
     traffic_source VARCHAR(100),
     created_at DATETIME,
 );
+
+-- Conversation Schema
+CREATE TABLE conversations(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+);
+
+CREATE TABLE messages(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    conversation_id INT,
+    sender ENUM('user', 'ai'),
+    messages TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+        ON DELETE CASCADE
+);
