@@ -4,6 +4,19 @@ from pydantic import BaseModel
 from . import database, crud, models
 from .llm import get_llm_response
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For dev, use ["http://localhost:3000"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
