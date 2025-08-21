@@ -10,15 +10,20 @@ class Conversation(Base):
     user_id = Column(String(50))
     created_at = Column(DateTime, default=func.now())
 
-    messages = relationship("Message", back_populates="conversation")
+    messages = relationship("Message", back_populates="conversation", cascade="all, delete", passive_deletes=True)
+
 
 class Message(Base):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True, index=True)
-    conversation_id = Column(Integer, ForeignKey('conversations.id'), ondelete='CASCADE')
+    conversation_id = Column(
+    Integer,
+    ForeignKey('conversations.id', ondelete='CASCADE')
+)
     sender = Column(Enum("user", "ai"), nullable=False)  # 'user' or 'bot'
     message = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=func.now())
     conversation = relationship("Conversation", back_populates="messages")
+
     

@@ -1,58 +1,42 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import MessageList from './MessageList';
 import UserInput from './UserInput';
-import { useChat } from '../context/ChatContext';
+import SessionList from './SessionList';
+import './ChatWindow.css';
 
 const ChatWindow = () => {
-  const {
-    messages, setMessages,
-    conversationId, setConversationId,
-    history, setHistory,
-    loading, setLoading
-  } = useChat();
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
 
-  // Fetch past conversations from backend
-  useEffect(() => {
-    fetch("http://localhost:3000/api/conversations")
-      .then(res => res.json())
-      .then(data => setHistory(data));
-  }, []);
+  const onSend = async (text) => {
+    const userMessage = { sender: 'user', text };
+    setMessages((prev) => [...prev, userMessage]);
 
-  const handleSessionClick = (id) => {
-    fetch(`http://localhost:3000/api/conversations/${id}`)
-      .then(res => res.json())
-      .then(data => {
-        setMessages(data.messages);
-        setConversationId(id);
+    try {
+      const res = await fetch('http://localhost:8000/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
       });
+
+      const data = await res.json();
+      const aiMessage = { sender: 'ai', text: data.response };
+      setMessages((prev) => [...prev, aiMessage]);
+
+    } catch (error) {
+      console.error('Failed to fetch:', error);
+    }
   };
 
   return (
-    <div className="chat-window" style={{ display: 'flex', flexDirection: 'row' }}>
-      {/* Left panel for history */}
-      <div style={{ width: '200px', borderRight: '1px solid #ccc', padding: '12px' }}>
-        <h4>Sessions</h4>
-        {history.map((conv) => (
-          <div
-            key={conv.id}
-            style={{
-              padding: '8px',
-              marginBottom: '8px',
-              background: conv.id === conversationId ? '#dbeafe' : '#f9fafb',
-              cursor: 'pointer',
-              borderRadius: '4px'
-            }}
-            onClick={() => handleSessionClick(conv.id)}
-          >
-            Conversation #{conv.id}
-          </div>
-        ))}
+    <div className="chat-window">
+      <div className="sidebar">
+        <SessionList />
       </div>
-
-      {/* Right panel for chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="main">
+        <h1 className="title">E-commerce Chat Support</h1>
         <MessageList messages={messages} />
-        <UserInput />
+        <UserInput value={input} onChange={setInput} onSend={onSend} />
       </div>
     </div>
   );

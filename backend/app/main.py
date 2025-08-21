@@ -3,23 +3,21 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from . import database, crud, models
 from .llm import get_llm_response
-
 from fastapi.middleware.cors import CORSMiddleware
+
+import asyncio  # Needed to await coroutine if inside sync function
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For dev, use ["http://localhost:3000"]
+    allow_origins=["*"],  # Use ["http://localhost:3000"] for specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 models.Base.metadata.create_all(bind=database.engine)
-
-app = FastAPI()
 
 def get_db():
     db = database.SessionLocal()
@@ -83,7 +81,7 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
 
     # Get AI response from Groq
     try:
-        ai_reply = get_llm_response(chat_history)
+        ai_reply = asyncio.run(get_llm_response(chat_history))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM error: {e}")
 

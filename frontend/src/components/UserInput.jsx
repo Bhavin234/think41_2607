@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const UserInput = ({ onSend }) => {
-  const [input, setInput] = useState('');
-
+const UserInput = ({ value, onChange, onSend }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    onSend(input);
-    setInput('');
+    if (value.trim()) {
+      onSend(value);
+      onChange('');
+    }
   };
 
   return (
-    <form className="user-input" onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
       <input
         type="text"
-        placeholder="Ask me anything..."
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Ask something..."
       />
       <button type="submit">Send</button>
     </form>
